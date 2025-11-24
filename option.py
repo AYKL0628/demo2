@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
+import pandas as pd
 
 st.title('Hello, Students!')
 st.write('This is your Python Programming course.')
@@ -17,7 +18,8 @@ with st.sidebar:
 
 if selected == "Home":
     st.title(f"Welcome to the {selected} page.")
-
+    df = pd.read_csv("wine-quality-red")
+    st.dataframe(df)
 if selected == "About":
     st.title(f"Welcome to the {selected} page.")
 
