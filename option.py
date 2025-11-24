@@ -10,8 +10,8 @@ with st.sidebar:
         options = ["Home", "About", "Contact"],
         icons = ["house",
                  "gear",
-                 "cast"],
-        menu_icon= "emoji-smile-fill",
+                 "list-task"],
+        menu_icon= "cast",
         default_index=0,
     )
 
