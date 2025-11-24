@@ -1,10 +1,12 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 import pandas as pd
+import os
 
 st.title('Hello, Students!')
 st.write('This is your Python Programming course.')
-
+current_directory = os.getcwd()
+file_path = os.path.join(current_directory, "winequality-red.csv")
 with st.sidebar:
     selected=option_menu(
         menu_title = "Menu",
@@ -18,7 +20,7 @@ with st.sidebar:
 
 if selected == "Home":
     st.title(f"Welcome to the {selected} page.")
-    df = pd.read_csv("wine-quality-red")
+    df = pd.read_csv(file_path, delimiter=';')
     st.dataframe(df)
 if selected == "About":
     st.title(f"Welcome to the {selected} page.")
