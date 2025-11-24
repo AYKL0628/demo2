@@ -20,6 +20,7 @@ with st.sidebar:
 
 if selected == "Home":
     st.title(f"Welcome to the {selected} page.")
+    st.write("Wine quality data")
     df = pd.read_csv(file_path, delimiter=';')
     st.dataframe(df)
 if selected == "About":
