@@ -1,3 +1,4 @@
 streamlit
 time
 pandas
+streamlit_option_menu
