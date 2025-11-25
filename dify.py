@@ -410,7 +410,6 @@ def main():
             help="Show detailed request/response information"
         )
 
-        st.title("FAQ Board")
         # Additional inputs
         with st.expander("📝 Additional Inputs"):
             st.info("Add custom input parameters (optional)")
@@ -434,7 +433,7 @@ def main():
                     if col2.button("🗑️", key=f"del_{key}"):
                         del st.session_state.custom_inputs[key]
                         st.rerun()
-        
+             st.title("FAQ Board")
         # Conversation info
         st.divider()
         st.caption(f"**User ID:** `{st.session_state.user_id[:8]}...`")
