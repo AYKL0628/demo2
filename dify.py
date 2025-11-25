@@ -381,23 +381,73 @@ FAQ_DATA = [
 Additionally, there are **In-video Quizzes** that are ongoing throughout the course and are tied to the lecture videos. Be sure to watch the videos to access these quizzes."""
     },
     {
-        "question": "What is the difference between Chatbot and Workflow mode?",
-        "answer": """**Chatbot Mode:**
-- Conversational AI with memory
-- Maintains conversation context
-- Best for interactive Q&A
+        "question": "What is RNN with attention?",
+        "answer": """**Recurrent Neural Networks (RNNs) with Attention** are an advanced architecture used in deep learning, particularly for sequence-to-sequence tasks like language translation, text summarization, and speech recognition.
 
-**Workflow Mode:**
-- Task-based processing
-- Processes inputs and returns outputs
-- Best for specific operations"""
+### Key Concepts:
+
+1. **Recurrent Neural Networks (RNNs)**: 
+   - RNNs are designed to process sequences of data by maintaining a hidden state that captures information from previous time steps. They are effective for tasks where context and order of data are important, such as time series analysis or natural language processing.
+
+2. **Attention Mechanism**:
+   - The attention mechanism allows the model to focus on specific parts of the input sequence when making predictions. Instead of relying solely on the last hidden state (as traditional RNNs do), attention weights are computed to determine the relevance of all previous states. This enables the model to weigh the importance of different inputs dynamically.
+
+### How RNNs with Attention Work:
+
+1. **Encoding**: The input sequence is processed by the RNN, generating a series of hidden states that encapsulate the information in the sequence.
+
+2. **Attention Calculation**: For each output step, the model calculates attention scores for all hidden states from the input sequence. This involves:
+   - Computing a score (often using dot product or a feed-forward network) that reflects how relevant each hidden state is to the current output.
+   - Normalizing these scores using a softmax function to create attention weights.
+
+3. **Context Vector**: The attention weights are then used to create a weighted sum of the hidden states, forming a context vector that highlights the most relevant parts of the input sequence for generating the current output.
+
+4. **Decoding**: The context vector is combined with the current input (or previous output) to produce the next output in the sequence.
+
+### Benefits of RNNs with Attention:
+
+- **Improved Performance**: By focusing on the most relevant parts of the input, attention mechanisms enhance the model's ability to capture dependencies over long sequences.
+- **Interpretability**: Attention weights provide insights into which parts of the input the model considers important for its predictions.
+- **Flexibility**: This architecture can handle variable-length input sequences effectively.
+
+In summary, RNNs with attention improve upon traditional RNNs by incorporating a mechanism that allows the model to dynamically focus on different parts of the input sequence, resulting in more accurate and interpretable outputs.
+        
+        """
     },
     {
-        "question": "How do I reset my conversation?",
-        "answer": """Click the "🗑️ Clear Conversation" button in the sidebar. This will:
-- Clear all messages from the current session
-- Reset the conversation ID
-- Start fresh with a new conversation"""
+        "question": "What are the requirements of the presentaion??",
+        "answer": """The requirements for the group presentation in the CTDL1902 course are as follows:
+
+1. **Content**:
+   - Demonstrate a clear understanding of AI concepts and how they differ from human cognition.
+   - Apply critical thinking to evaluate AI solutions and their implications.
+   - Analyze AI's role in society using various theoretical frameworks, such as network theory, complexity theory, and ethical theories.
+
+2. **Structure**:
+   - Organize the presentation logically, covering key topics and findings in a coherent manner.
+   - Include an introduction, main body, and conclusion.
+
+3. **Duration**:
+   - Adhere to the time limit specified by the instructor (typically around 10-15 minutes, but confirm with course guidelines).
+
+4. **Visual Aids**:
+   - Use slides or other visual aids to enhance understanding and engagement (ensure they are clear and not overly cluttered).
+
+5. **Communication**:
+   - Clearly articulate ideas, using appropriate academic language.
+   - Engage the audience and encourage questions or discussions.
+
+6. **Team Collaboration**:
+   - Ensure that all group members contribute to the presentation, with clear division of roles and responsibilities.
+   - Practice collectively to ensure smooth transitions and timing.
+
+7. **Citations**:
+   - Properly cite any sources or references used in the presentation to acknowledge contributions and uphold academic integrity.
+
+8. **Feedback and Revisions**:
+   - Be open to feedback during practice sessions and make necessary revisions to improve the presentation.
+
+These requirements aim to ensure that the presentation is informative, engaging, and reflective of the group's understanding of the course material. Make sure to check any specific guidelines provided by your instructor for additional details or expectations."""
     },
 ]
         
