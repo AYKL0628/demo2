@@ -10,6 +10,8 @@ from typing import Generator, Optional
 
 def initialize_session_state():
     """Initialize session state variables."""
+    def initialize_session_state():
+    """Initialize session state variables."""
     if "messages" not in st.session_state:
         st.session_state.messages = []
     
@@ -22,20 +24,22 @@ def initialize_session_state():
     if "custom_inputs" not in st.session_state:
         st.session_state.custom_inputs = {}
     
+    # HARDCODED API KEY - Replace with your actual key
     if "api_key" not in st.session_state:
-        st.session_state.api_key = st.secrets.get("DIFY_API_KEY", "")
+        st.session_state.api_key = "app-6dYJsjilYPeonNoDN3EKOazW"  # ← Put your key here
     
     if "api_base_url" not in st.session_state:
-        st.session_state.api_base_url = st.secrets.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1")
+        st.session_state.api_base_url = "https://api.dify.ai/v1"
     
     if "debug_mode" not in st.session_state:
         st.session_state.debug_mode = False
     
     if "app_type" not in st.session_state:
-        st.session_state.app_type = "chatbot"
+        st.session_state.app_type = "chatbot"  # Or "workflow" if you use that
     
     if "current_page" not in st.session_state:
         st.session_state.current_page = "chat"
+"
 
 
 def chatbot_streaming(
@@ -530,26 +534,8 @@ def show_chat_page():
         
         st.divider()
         
-        # API Configuration
-        with st.expander("🔑 API Configuration", expanded=not bool(st.session_state.api_key)):
-            api_key_input = st.text_input(
-                "Dify API Key",
-                value=st.session_state.api_key,
-                type="password",
-                help="Get this from your Dify app → Publish tab"
-            )
-            
-            api_url_input = st.text_input(
-                "API Base URL",
-                value=st.session_state.api_base_url,
-                help="Default: https://api.dify.ai/v1"
-            )
-            
-            if st.button("💾 Save Configuration"):
-                st.session_state.api_key = api_key_input
-                st.session_state.api_base_url = api_url_input
-                st.success("✅ Configuration saved!")
-                st.rerun()
+     
+        
         
         # App Type Selection
         st.write("### 🎯 App Type")
