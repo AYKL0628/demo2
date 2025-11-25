@@ -10,8 +10,7 @@ from typing import Generator, Optional
 
 def initialize_session_state():
     """Initialize session state variables."""
-    def initialize_session_state():
-    """Initialize session state variables."""
+    
     if "messages" not in st.session_state:
         st.session_state.messages = []
     
