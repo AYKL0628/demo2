@@ -409,7 +409,9 @@ def main():
             value=st.session_state.debug_mode,
             help="Show detailed request/response information"
         )
-
+        if st.button("FAQ Board"):
+            st.write("1. When are the quizzes?")
+        
         # Additional inputs
         with st.expander("📝 Additional Inputs"):
             st.info("Add custom input parameters (optional)")
@@ -433,7 +435,7 @@ def main():
                     if col2.button("🗑️", key=f"del_{key}"):
                         del st.session_state.custom_inputs[key]
                         st.rerun()
-             st.title("FAQ Board")
+    
         # Conversation info
         st.divider()
         st.caption(f"**User ID:** `{st.session_state.user_id[:8]}...`")
