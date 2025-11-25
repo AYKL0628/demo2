@@ -409,8 +409,8 @@ def main():
             value=st.session_state.debug_mode,
             help="Show detailed request/response information"
         )
-        if st.button("FAQ Board"):
-            st.write("1. When are the quizzes?")
+
+        
         
         # Additional inputs
         with st.expander("📝 Additional Inputs"):
