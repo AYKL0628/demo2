@@ -25,7 +25,7 @@ def initialize_session_state():
     
     # HARDCODED API KEY - Replace with your actual key
     if "api_key" not in st.session_state:
-        st.session_state.api_key = "app-6dYJsjilYPeonNoDN3EKOazW"  # ← Put your key here
+        st.session_state.api_key = "app-jzdmRnz6pMzVWg28uuNhzBfh"  # ← Put your key here
     
     if "api_base_url" not in st.session_state:
         st.session_state.api_base_url = "https://api.dify.ai/v1"
