@@ -5,21 +5,6 @@ import json
 from typing import Generator, Optional
 
 # ============================================================================
-# Configuration
-# ============================================================================
-
-def get_api_config():
-    """Get API configuration from secrets or session state."""
-    if "api_key" not in st.session_state:
-        st.session_state.api_key = st.secrets.get("DIFY_API_KEY", "")
-    
-    if "api_base_url" not in st.session_state:
-        st.session_state.api_base_url = st.secrets.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1")
-    
-    return st.session_state.api_key, st.session_state.api_base_url
-
-
-# ============================================================================
 # Helper Functions
 # ============================================================================
 
@@ -36,6 +21,13 @@ def initialize_session_state():
     
     if "custom_inputs" not in st.session_state:
         st.session_state.custom_inputs = {}
+    
+    # Initialize API configuration from secrets or empty strings
+    if "api_key" not in st.session_state:
+        st.session_state.api_key = st.secrets.get("DIFY_API_KEY", "")
+    
+    if "api_base_url" not in st.session_state:
+        st.session_state.api_base_url = st.secrets.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1")
 
 
 def chat_with_dify_blocking(
@@ -56,16 +48,14 @@ def chat_with_dify_blocking(
     Returns:
         Response dictionary from Dify API
     """
-    api_key, api_base_url = get_api_config()
-    
-    if not api_key:
+    if not st.session_state.api_key:
         st.error("⚠️ Please configure your Dify API key in Settings")
         return {"answer": "API key not configured.", "error": True}
     
-    url = f"{api_base_url}/chat-messages"
+    url = f"{st.session_state.api_base_url}/chat-messages"
     
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {st.session_state.api_key}",
         "Content-Type": "application/json"
     }
     
@@ -108,17 +98,15 @@ def chat_with_dify_streaming(
     Yields:
         Chunks of the response as they arrive
     """
-    api_key, api_base_url = get_api_config()
-    
-    if not api_key:
+    if not st.session_state.api_key:
         st.error("⚠️ Please configure your Dify API key in Settings")
         yield "API key not configured."
         return
     
-    url = f"{api_base_url}/chat-messages"
+    url = f"{st.session_state.api_base_url}/chat-messages"
     
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {st.session_state.api_key}",
         "Content-Type": "application/json"
     }
     
@@ -197,7 +185,7 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    # Initialize session state
+    # Initialize session state FIRST
     initialize_session_state()
     
     # Sidebar
@@ -210,19 +198,19 @@ def main():
                 "Dify API Key",
                 value=st.session_state.api_key,
                 type="password",
-                help="Enter your Dify API key"
+                help="Enter your Dify API key from your Dify workspace"
             )
             
             api_url_input = st.text_input(
                 "API Base URL",
                 value=st.session_state.api_base_url,
-                help="Dify API base URL"
+                help="Dify API base URL (default: https://api.dify.ai/v1)"
             )
             
             if st.button("💾 Save Configuration"):
                 st.session_state.api_key = api_key_input
                 st.session_state.api_base_url = api_url_input
-                st.success("Configuration saved!")
+                st.success("✅ Configuration saved!")
                 st.rerun()
         
         # Streaming mode toggle
@@ -236,12 +224,16 @@ def main():
         with st.expander("📝 Additional Inputs", expanded=False):
             st.info("Add custom input parameters to send with your queries")
             
-            input_key = st.text_input("Input Key", placeholder="e.g., city")
-            input_value = st.text_input("Input Value", placeholder="e.g., Hong Kong")
+            col1, col2 = st.columns(2)
+            with col1:
+                input_key = st.text_input("Input Key", placeholder="e.g., city")
+            with col2:
+                input_value = st.text_input("Input Value", placeholder="e.g., Hong Kong")
             
-            if st.button("➕ Add Input") and input_key and input_value:
+            if st.button("➕ Add Input", use_container_width=True) and input_key and input_value:
                 st.session_state.custom_inputs[input_key] = input_value
-                st.success(f"Added: {input_key} = {input_value}")
+                st.success(f"✅ Added: {input_key} = {input_value}")
+                st.rerun()
             
             # Display current custom inputs
             if st.session_state.custom_inputs:
@@ -258,6 +250,8 @@ def main():
         st.caption(f"**User ID:** `{st.session_state.user_id[:8]}...`")
         if st.session_state.conversation_id:
             st.caption(f"**Conversation:** `{st.session_state.conversation_id[:8]}...`")
+        else:
+            st.caption("**Conversation:** New conversation")
         
         # Clear conversation button
         if st.button("🗑️ Clear Conversation", use_container_width=True):
@@ -270,6 +264,14 @@ def main():
     # Warning if API key not configured
     if not st.session_state.api_key:
         st.warning("⚠️ Please configure your Dify API key in the sidebar Settings to start chatting.")
+        st.info("""
+        **To get your Dify API key:**
+        1. Log into your Dify workspace
+        2. Navigate to your application
+        3. Go to the **API Access** section
+        4. Generate and copy your API key
+        5. Paste it in the sidebar Settings
+        """)
     
     # Display chat messages
     for message in st.session_state.messages:
@@ -277,7 +279,7 @@ def main():
             st.markdown(message["content"])
     
     # Chat input
-    if prompt := st.chat_input("Enter your question here..."):
+    if prompt := st.chat_input("Enter your question here...", disabled=not st.session_state.api_key):
         
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -335,3 +337,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
