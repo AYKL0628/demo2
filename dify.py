@@ -565,7 +565,7 @@ Addressing these risks requires proactive measures, including the development of
 def show_faq_page():
     """Display the FAQ page."""
     st.title("❓ Frequently Asked Questions")
-    st.caption("Common questions about CTDL1902")
+    st.caption("Common questions about CTDL1902 asked by students")
     
     # Back to Chat button
     if st.button("← Back to Chat", use_container_width=False):
