@@ -409,7 +409,8 @@ def main():
             value=st.session_state.debug_mode,
             help="Show detailed request/response information"
         )
-        
+
+        st.title("FAQ Board")
         # Additional inputs
         with st.expander("📝 Additional Inputs"):
             st.info("Add custom input parameters (optional)")
