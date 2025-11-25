@@ -351,12 +351,34 @@ def clear_conversation():
 
 FAQ_DATA = [
     {
-        "question": "How do I get started with this chatbot?",
-        "answer": """To get started:
-1. Get your API key from your Dify workspace → App → Publish tab
-2. Paste it in the sidebar under "API Configuration"
-3. Select your app type (Chatbot or Workflow)
-4. Start chatting!"""
+        "question": "When are the quizzes?",
+        "answer": """The quizzes for the course CTDL1902 are scheduled as follows:
+
+1. **Quiz 1**: 
+   - Date: October 8
+   - Available for:
+     - Lecture 1 (L1): October 8
+     - Lecture 2 (L2): October 8
+     - Lecture 3 (L3): October 9
+     - Lecture 4 (L4): October 9
+
+2. **Quiz 2**: 
+   - Contribution: 3%
+   - Dates: 
+     - Lecture 1 (L1): October 22
+     - Lecture 2 (L2): October 22
+     - Lecture 3 (L3): October 23
+     - Lecture 4 (L4): October 23
+
+3. **Quiz 3**: 
+   - Contribution: 3%
+   - Dates:
+     - Lecture 1 (L1): November 12
+     - Lecture 2 (L2): November 12
+     - Lecture 3 (L3): November 13
+     - Lecture 4 (L4): November 13
+
+Additionally, there are **In-video Quizzes** that are ongoing throughout the course and are tied to the lecture videos. Be sure to watch the videos to access these quizzes."""
     },
     {
         "question": "What is the difference between Chatbot and Workflow mode?",
