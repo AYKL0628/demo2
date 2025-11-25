@@ -400,42 +400,7 @@ Additionally, there are **In-video Quizzes** that are ongoing throughout the cou
 - Start fresh with a new conversation"""
     },
     {
-        "question": "What should I do if the AI doesn't respond?",
-        "answer": """If you're not getting responses:
-1. Check that your API key is correct (starts with 'app-')
-2. Verify your app type matches your Dify app (Chatbot vs Workflow)
-3. Make sure your Dify app is published
-4. Enable Debug Mode in the sidebar to see detailed error messages
-5. Check that your LLM model is configured in Dify"""
-    },
-    {
-        "question": "Can I use custom input parameters?",
-        "answer": """Yes! Use the "Additional Inputs" section in the sidebar to add custom parameters:
-1. Enter a key name (e.g., "language")
-2. Enter a value (e.g., "English")
-3. Click "Add Input"
-
-These parameters will be sent with every request."""
-    },
-    {
-        "question": "Is my conversation data saved?",
-        "answer": """Conversations are only stored during your current session:
-- Messages persist while the app is open
-- Data is cleared when you refresh the page or close the browser
-- No conversations are stored on servers
-- Each user has a unique session ID for the duration of their session"""
-    },
-    {
-        "question": "How do I enable Debug Mode?",
-        "answer": """To enable Debug Mode:
-1. Go to the sidebar
-2. Check the "🐛 Debug Mode" checkbox
-3. Send a message to see detailed request/response information
-
-This is helpful for troubleshooting issues."""
-    }
-]
-
+        
 
 # ============================================================================
 # FAQ Page
