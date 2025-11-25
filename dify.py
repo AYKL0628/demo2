@@ -8,9 +8,16 @@ from typing import Generator, Optional
 # Configuration
 # ============================================================================
 
-# Dify API Configuration
-DIFY_API_KEY = st.secrets.get("DIFY_API_KEY", "your-api-key-here")
-DIFY_API_BASE_URL = st.secrets.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1")
+def get_api_config():
+    """Get API configuration from secrets or session state."""
+    if "api_key" not in st.session_state:
+        st.session_state.api_key = st.secrets.get("DIFY_API_KEY", "")
+    
+    if "api_base_url" not in st.session_state:
+        st.session_state.api_base_url = st.secrets.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1")
+    
+    return st.session_state.api_key, st.session_state.api_base_url
+
 
 # ============================================================================
 # Helper Functions
@@ -26,6 +33,9 @@ def initialize_session_state():
     
     if "user_id" not in st.session_state:
         st.session_state.user_id = str(uuid.uuid4())
+    
+    if "custom_inputs" not in st.session_state:
+        st.session_state.custom_inputs = {}
 
 
 def chat_with_dify_blocking(
@@ -46,10 +56,16 @@ def chat_with_dify_blocking(
     Returns:
         Response dictionary from Dify API
     """
-    url = f"{DIFY_API_BASE_URL}/chat-messages"
+    api_key, api_base_url = get_api_config()
+    
+    if not api_key:
+        st.error("⚠️ Please configure your Dify API key in Settings")
+        return {"answer": "API key not configured.", "error": True}
+    
+    url = f"{api_base_url}/chat-messages"
     
     headers = {
-        "Authorization": f"Bearer {DIFY_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     
@@ -92,10 +108,17 @@ def chat_with_dify_streaming(
     Yields:
         Chunks of the response as they arrive
     """
-    url = f"{DIFY_API_BASE_URL}/chat-messages"
+    api_key, api_base_url = get_api_config()
+    
+    if not api_key:
+        st.error("⚠️ Please configure your Dify API key in Settings")
+        yield "API key not configured."
+        return
+    
+    url = f"{api_base_url}/chat-messages"
     
     headers = {
-        "Authorization": f"Bearer {DIFY_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     
@@ -152,46 +175,6 @@ def chat_with_dify_streaming(
         yield "Sorry, I encountered an error. Please try again."
 
 
-def upload_file_to_dify(file_path: str, user_id: str) -> Optional[str]:
-    """
-    Upload a file to Dify for processing.
-    
-    Args:
-        file_path: Path to the file to upload
-        user_id: Unique identifier for the user
-    
-    Returns:
-        Document ID if successful, None otherwise
-    """
-    url = f"{DIFY_API_BASE_URL}/files/upload"
-    
-    headers = {
-        "Authorization": f"Bearer {DIFY_API_KEY}"
-    }
-    
-    try:
-        with open(file_path, "rb") as f:
-            file_name = file_path.split("/")[-1]
-            
-            files = {
-                'file': (file_name, f, 'application/octet-stream')
-            }
-            
-            data = {
-                "user": user_id
-            }
-            
-            response = requests.post(url, headers=headers, files=files, data=data)
-            response.raise_for_status()
-            
-            result = response.json()
-            return result.get("id")
-    
-    except Exception as e:
-        st.error(f"Error uploading file: {str(e)}")
-        return None
-
-
 def clear_conversation():
     """Clear the current conversation and start fresh."""
     st.session_state.messages = []
@@ -221,28 +204,26 @@ def main():
     with st.sidebar:
         st.title("⚙️ Settings")
         
-        # API Configuration (can be overridden)
-        with st.expander("🔑 API Configuration", expanded=False):
+        # API Configuration
+        with st.expander("🔑 API Configuration", expanded=not bool(st.session_state.api_key)):
             api_key_input = st.text_input(
                 "Dify API Key",
-                value=DIFY_API_KEY,
+                value=st.session_state.api_key,
                 type="password",
                 help="Enter your Dify API key"
             )
             
             api_url_input = st.text_input(
                 "API Base URL",
-                value=DIFY_API_BASE_URL,
+                value=st.session_state.api_base_url,
                 help="Dify API base URL"
             )
             
-            if api_key_input != DIFY_API_KEY:
-                global DIFY_API_KEY
-                DIFY_API_KEY = api_key_input
-            
-            if api_url_input != DIFY_API_BASE_URL:
-                global DIFY_API_BASE_URL
-                DIFY_API_BASE_URL = api_url_input
+            if st.button("💾 Save Configuration"):
+                st.session_state.api_key = api_key_input
+                st.session_state.api_base_url = api_url_input
+                st.success("Configuration saved!")
+                st.rerun()
         
         # Streaming mode toggle
         use_streaming = st.checkbox(
@@ -258,10 +239,19 @@ def main():
             input_key = st.text_input("Input Key", placeholder="e.g., city")
             input_value = st.text_input("Input Value", placeholder="e.g., Hong Kong")
             
-            if input_key and input_value:
-                if "custom_inputs" not in st.session_state:
-                    st.session_state.custom_inputs = {}
+            if st.button("➕ Add Input") and input_key and input_value:
                 st.session_state.custom_inputs[input_key] = input_value
+                st.success(f"Added: {input_key} = {input_value}")
+            
+            # Display current custom inputs
+            if st.session_state.custom_inputs:
+                st.write("**Current Inputs:**")
+                for key, value in st.session_state.custom_inputs.items():
+                    col1, col2 = st.columns([3, 1])
+                    col1.code(f"{key}: {value}")
+                    if col2.button("🗑️", key=f"del_{key}"):
+                        del st.session_state.custom_inputs[key]
+                        st.rerun()
         
         # Conversation info
         st.divider()
@@ -276,6 +266,10 @@ def main():
     # Main content
     st.title("🤖 Dify AI Chatbot")
     st.caption("Powered by Dify API and Streamlit")
+    
+    # Warning if API key not configured
+    if not st.session_state.api_key:
+        st.warning("⚠️ Please configure your Dify API key in the sidebar Settings to start chatting.")
     
     # Display chat messages
     for message in st.session_state.messages:
@@ -293,7 +287,7 @@ def main():
             st.markdown(prompt)
         
         # Get custom inputs if any
-        custom_inputs = st.session_state.get("custom_inputs", {})
+        custom_inputs = st.session_state.custom_inputs
         
         # Display assistant response
         with st.chat_message("assistant"):
