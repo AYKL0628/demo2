@@ -399,7 +399,7 @@ Additionally, there are **In-video Quizzes** that are ongoing throughout the cou
 - Reset the conversation ID
 - Start fresh with a new conversation"""
     },
-    
+]
         
 
 # ============================================================================
