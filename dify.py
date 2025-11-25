@@ -29,7 +29,7 @@ def initialize_session_state():
         st.session_state.api_base_url = st.secrets.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1")
     
     if "debug_mode" not in st.session_state:
-        st.session_state.debug_mode = True  # Enable debug by default
+        st.session_state.debug_mode = False  # OFF by default
     
     if "app_type" not in st.session_state:
         st.session_state.app_type = "chatbot"
@@ -41,12 +41,8 @@ def chatbot_streaming(
     conversation_id: str = "",
     inputs: Optional[dict] = None
 ) -> Generator[str, None, None]:
-    """Send streaming chat request - ENHANCED DEBUGGING VERSION."""
-    
-    st.write("🔄 Starting chatbot request...")
-    
+    """Send streaming chat request for Chatbot apps."""
     if not st.session_state.api_key:
-        st.error("⚠️ No API key!")
         yield "API key not configured."
         return
     
@@ -67,109 +63,57 @@ def chatbot_streaming(
     if conversation_id:
         payload["conversation_id"] = conversation_id
     
-    st.write("**📤 Request Info:**")
-    st.write(f"- URL: `{url}`")
-    st.write(f"- User ID: `{user_id[:16]}...`")
-    st.write("**Payload:**")
-    st.json(payload)
-    
-    event_count = 0
-    received_data = []
+    if st.session_state.debug_mode:
+        st.write("**🔍 DEBUG - Request:**")
+        st.json(payload)
     
     try:
-        st.write("🔌 Connecting to Dify API...")
-        
         with requests.post(url, headers=headers, json=payload, stream=True, timeout=60) as response:
             
-            st.write(f"**📥 Response Status:** `{response.status_code}`")
-            st.write(f"**📥 Response Headers:** `{dict(response.headers)}`")
+            if st.session_state.debug_mode:
+                st.write(f"**🔍 DEBUG - Status:** `{response.status_code}`")
             
             if response.status_code != 200:
                 error_text = response.text
-                st.error(f"❌ HTTP {response.status_code}")
-                st.code(error_text)
-                
-                try:
-                    error_json = json.loads(error_text)
-                    st.json(error_json)
-                except:
-                    pass
-                
-                yield f"Error {response.status_code}: {error_text}"
+                st.error(f"❌ HTTP {response.status_code}: {error_text}")
+                yield f"Error: {error_text}"
                 return
-            
-            st.write("✅ Connection successful! Receiving stream...")
             
             for line in response.iter_lines():
                 if line:
                     line_str = line.decode('utf-8')
-                    event_count += 1
-                    
-                    st.write(f"**Event {event_count}:** `{line_str[:100]}...`")
-                    received_data.append(line_str)
                     
                     if not line_str.strip():
                         continue
                     
-                    if line_str.startswith(" "):
+                    if line_str.startswith("data: "):
                         json_str = line_str[6:]
                         
                         try:
                             data = json.loads(json_str)
                             event = data.get("event", "")
                             
-                            st.write(f"  └─ **Event Type:** `{event}`")
-                            
                             if event in ["message", "agent_message"]:
                                 answer = data.get("answer", "")
-                                st.write(f"  └─ **Answer chunk:** `{answer[:50]}...`")
                                 if answer:
                                     yield answer
                             
                             elif event == "message_end":
                                 conv_id = data.get("conversation_id", "")
-                                st.write(f"  └─ **Conversation ID:** `{conv_id}`")
                                 if conv_id:
                                     st.session_state.conversation_id = conv_id
                             
                             elif event == "error":
                                 error_msg = data.get("message", "Unknown error")
-                                st.error(f"❌ Dify Error: {error_msg}")
+                                st.error(f"❌ Error: {error_msg}")
                                 yield f"\n\nError: {error_msg}"
                                 break
-                            
-                            # Show full data for first few events
-                            if event_count <= 5:
-                                with st.expander(f"Full Data for Event {event_count}"):
-                                    st.json(data)
                         
-                        except json.JSONDecodeError as e:
-                            st.warning(f"⚠️ JSON decode error: {str(e)}")
-                            st.code(json_str[:200])
+                        except json.JSONDecodeError:
                             continue
-            
-            st.write(f"**📊 Total events received:** {event_count}")
-            
-            if event_count == 0:
-                st.error("❌ No events received from stream!")
-                st.write("**This could mean:**")
-                st.write("1. The app has no response configured")
-                st.write("2. The LLM model is not set up")
-                st.write("3. The app is not published")
-                yield "No response received from Dify. Check your app configuration."
     
-    except requests.exceptions.Timeout:
-        st.error("❌ Request timed out after 60 seconds")
-        yield "Request timed out."
-    
-    except requests.exceptions.ConnectionError as e:
+    except requests.exceptions.RequestException as e:
         st.error(f"❌ Connection error: {str(e)}")
-        yield f"Connection error: {str(e)}"
-    
-    except Exception as e:
-        st.error(f"❌ Unexpected error: {str(e)}")
-        import traceback
-        st.code(traceback.format_exc())
         yield f"Error: {str(e)}"
 
 
@@ -179,10 +123,7 @@ def chatbot_blocking(
     conversation_id: str = "",
     inputs: Optional[dict] = None
 ) -> dict:
-    """Send blocking chat request - ENHANCED DEBUGGING VERSION."""
-    
-    st.write("🔄 Starting blocking chatbot request...")
-    
+    """Send blocking chat request for Chatbot apps."""
     if not st.session_state.api_key:
         return {"answer": "API key not configured.", "error": True}
     
@@ -203,42 +144,194 @@ def chatbot_blocking(
     if conversation_id:
         payload["conversation_id"] = conversation_id
     
-    st.write("**📤 Request:**")
-    st.json(payload)
+    if st.session_state.debug_mode:
+        st.write("**🔍 DEBUG - Request:**")
+        st.json(payload)
     
     try:
-        st.write("🔌 Sending request...")
         response = requests.post(url, headers=headers, json=payload, timeout=60)
         
-        st.write(f"**📥 Status:** `{response.status_code}`")
-        st.write("**📥 Response Text:**")
-        st.code(response.text[:2000])
+        if st.session_state.debug_mode:
+            st.write(f"**🔍 DEBUG - Status:** `{response.status_code}`")
+            st.write("**🔍 DEBUG - Response:**")
+            st.code(response.text[:1000])
         
         if response.status_code == 200:
             result = response.json()
-            
-            st.write("**✅ Success! Full Response:**")
-            st.json(result)
-            
-            answer = result.get("answer", "")
-            
-            if not answer:
-                st.warning("⚠️ Response has no 'answer' field!")
-                st.write("**Available fields:**", list(result.keys()))
+            answer = result.get("answer", "No response.")
             
             if "conversation_id" in result:
                 st.session_state.conversation_id = result["conversation_id"]
             
-            return {"answer": answer or "No answer in response.", "raw": result}
+            return {"answer": answer, "raw": result}
         
         else:
-            st.error(f"❌ HTTP {response.status_code}")
-            return {"answer": f"Error {response.status_code}: {response.text}", "error": True}
+            error_text = response.text
+            st.error(f"❌ HTTP {response.status_code}: {error_text}")
+            return {"answer": f"Error: {error_text}", "error": True}
     
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         st.error(f"❌ Error: {str(e)}")
-        import traceback
-        st.code(traceback.format_exc())
+        return {"answer": f"Error: {str(e)}", "error": True}
+
+
+def workflow_streaming(
+    query: str,
+    user_id: str,
+    inputs: Optional[dict] = None
+) -> Generator[str, None, None]:
+    """Send streaming workflow request for Workflow apps."""
+    if not st.session_state.api_key:
+        yield "API key not configured."
+        return
+    
+    url = f"{st.session_state.api_base_url}/workflows/run"
+    
+    headers = {
+        "Authorization": f"Bearer {st.session_state.api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    workflow_inputs = {}
+    if inputs:
+        workflow_inputs.update(inputs)
+    workflow_inputs["query"] = query
+    
+    payload = {
+        "inputs": workflow_inputs,
+        "response_mode": "streaming",
+        "user": user_id
+    }
+    
+    if st.session_state.debug_mode:
+        st.write("**🔍 DEBUG - Request:**")
+        st.json(payload)
+    
+    try:
+        with requests.post(url, headers=headers, json=payload, stream=True, timeout=120) as response:
+            
+            if response.status_code != 200:
+                error_text = response.text
+                st.error(f"❌ HTTP {response.status_code}: {error_text}")
+                yield f"Error: {error_text}"
+                return
+            
+            has_content = False
+            
+            for line in response.iter_lines():
+                if line:
+                    line_str = line.decode('utf-8')
+                    
+                    if line_str.startswith("data: "):
+                        json_str = line_str[6:]
+                        
+                        try:
+                            data = json.loads(json_str)
+                            event = data.get("event", "")
+                            
+                            if event == "workflow_started":
+                                if st.session_state.debug_mode:
+                                    yield "⚙️ Workflow started...\n\n"
+                            
+                            elif event == "node_started":
+                                if st.session_state.debug_mode:
+                                    node_title = data.get("data", {}).get("title", "Processing")
+                                    yield f"▶️ {node_title}...\n"
+                            
+                            elif event == "node_finished":
+                                outputs = data.get("data", {}).get("outputs", {})
+                                text = (
+                                    outputs.get("text", "") or
+                                    outputs.get("output", "") or
+                                    outputs.get("result", "") or
+                                    outputs.get("answer", "")
+                                )
+                                if text:
+                                    has_content = True
+                                    yield text
+                            
+                            elif event == "text_chunk":
+                                text = data.get("data", {}).get("text", "")
+                                if text:
+                                    has_content = True
+                                    yield text
+                            
+                            elif event == "workflow_finished":
+                                if not has_content:
+                                    outputs = data.get("data", {}).get("outputs", {})
+                                    text = (
+                                        outputs.get("text", "") or
+                                        outputs.get("output", "") or
+                                        json.dumps(outputs, indent=2)
+                                    )
+                                    if text:
+                                        has_content = True
+                                        yield text
+                            
+                            elif event == "error":
+                                error_msg = data.get("message", "Unknown error")
+                                st.error(f"❌ Error: {error_msg}")
+                                break
+                        
+                        except json.JSONDecodeError:
+                            continue
+            
+            if not has_content:
+                yield "No output received from workflow."
+    
+    except requests.exceptions.RequestException as e:
+        yield f"Error: {str(e)}"
+
+
+def workflow_blocking(
+    query: str,
+    user_id: str,
+    inputs: Optional[dict] = None
+) -> dict:
+    """Send blocking workflow request for Workflow apps."""
+    if not st.session_state.api_key:
+        return {"answer": "API key not configured.", "error": True}
+    
+    url = f"{st.session_state.api_base_url}/workflows/run"
+    
+    headers = {
+        "Authorization": f"Bearer {st.session_state.api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    workflow_inputs = {}
+    if inputs:
+        workflow_inputs.update(inputs)
+    workflow_inputs["query"] = query
+    
+    payload = {
+        "inputs": workflow_inputs,
+        "response_mode": "blocking",
+        "user": user_id
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=120)
+        
+        if response.status_code == 200:
+            result = response.json()
+            outputs = result.get("data", {}).get("outputs", {})
+            
+            answer = (
+                outputs.get("text", "") or
+                outputs.get("output", "") or
+                outputs.get("result", "") or
+                json.dumps(outputs, indent=2)
+            )
+            
+            return {"answer": answer, "raw": result}
+        
+        else:
+            error_text = response.text
+            st.error(f"❌ HTTP {response.status_code}: {error_text}")
+            return {"answer": f"Error: {error_text}", "error": True}
+    
+    except requests.exceptions.RequestException as e:
         return {"answer": f"Error: {str(e)}", "error": True}
 
 
@@ -257,9 +350,10 @@ def main():
     """Main application."""
     
     st.set_page_config(
-        page_title="Dify AI Assistant - DEBUG MODE",
-        page_icon="🐛",
-        layout="wide"
+        page_title="Dify AI Assistant",
+        page_icon="🤖",
+        layout="wide",
+        initial_sidebar_state="expanded"
     )
     
     initialize_session_state()
@@ -268,74 +362,126 @@ def main():
     with st.sidebar:
         st.title("⚙️ Settings")
         
-        # API Config
+        # API Configuration
         with st.expander("🔑 API Configuration", expanded=not bool(st.session_state.api_key)):
             api_key_input = st.text_input(
                 "Dify API Key",
                 value=st.session_state.api_key,
-                type="password"
+                type="password",
+                help="Get this from your Dify app → Publish tab"
             )
             
             api_url_input = st.text_input(
                 "API Base URL",
-                value=st.session_state.api_base_url
+                value=st.session_state.api_base_url,
+                help="Default: https://api.dify.ai/v1"
             )
             
-            if st.button("💾 Save"):
+            if st.button("💾 Save Configuration"):
                 st.session_state.api_key = api_key_input
                 st.session_state.api_base_url = api_url_input
-                st.success("✅ Saved!")
+                st.success("✅ Configuration saved!")
                 st.rerun()
         
-        # Verify API key format
-        if st.session_state.api_key:
-            if st.session_state.api_key.startswith("app-"):
-                st.success("✅ API key format looks correct")
-            else:
-                st.error("⚠️ API key should start with 'app-'")
+        # App Type Selection
+        st.write("### 🎯 App Type")
+        app_type = st.radio(
+            "Select your Dify app type:",
+            options=["chatbot", "workflow"],
+            index=0 if st.session_state.app_type == "chatbot" else 1,
+            help="Choose the type that matches your Dify app"
+        )
         
-        # Debug mode (always on for now)
-        st.info("🐛 Debug mode is ON - You'll see detailed logs")
+        if app_type != st.session_state.app_type:
+            st.session_state.app_type = app_type
+            st.rerun()
         
-        # Streaming toggle
-        use_streaming = st.checkbox("📡 Use Streaming", value=False, help="Uncheck to use blocking mode for simpler debugging")
+        # Streaming mode
+        use_streaming = st.checkbox(
+            "📡 Enable Streaming",
+            value=True,
+            help="Stream responses in real-time"
+        )
         
+        # Debug mode (optional)
+        st.session_state.debug_mode = st.checkbox(
+            "🐛 Debug Mode",
+            value=st.session_state.debug_mode,
+            help="Show detailed request/response information"
+        )
+        
+        # Additional inputs
+        with st.expander("📝 Additional Inputs"):
+            st.info("Add custom input parameters (optional)")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                input_key = st.text_input("Key", placeholder="e.g., language")
+            with col2:
+                input_value = st.text_input("Value", placeholder="e.g., English")
+            
+            if st.button("➕ Add Input") and input_key and input_value:
+                st.session_state.custom_inputs[input_key] = input_value
+                st.success(f"✅ Added: {input_key} = {input_value}")
+                st.rerun()
+            
+            if st.session_state.custom_inputs:
+                st.write("**Current Inputs:**")
+                for key, value in st.session_state.custom_inputs.items():
+                    col1, col2 = st.columns([3, 1])
+                    col1.code(f"{key}: {value}")
+                    if col2.button("🗑️", key=f"del_{key}"):
+                        del st.session_state.custom_inputs[key]
+                        st.rerun()
+        
+        # Conversation info
         st.divider()
+        st.caption(f"**User ID:** `{st.session_state.user_id[:8]}...`")
+        if st.session_state.app_type == "chatbot" and st.session_state.conversation_id:
+            st.caption(f"**Conversation:** `{st.session_state.conversation_id[:8]}...`")
         
-        st.caption(f"User ID: `{st.session_state.user_id[:16]}...`")
-        if st.session_state.conversation_id:
-            st.caption(f"Conversation: `{st.session_state.conversation_id[:16]}...`")
-        
-        if st.button("🗑️ Clear Chat"):
+        # Clear conversation button
+        if st.button("🗑️ Clear Conversation", use_container_width=True):
             clear_conversation()
     
     # Main content
-    st.title("🐛 Dify Chatbot - DEBUG MODE")
-    st.caption("Enhanced debugging to find the issue")
+    app_icon = "💬" if st.session_state.app_type == "chatbot" else "⚙️"
+    st.title(f"{app_icon} Dify AI Assistant")
+    st.caption(f"{'Chatbot' if st.session_state.app_type == 'chatbot' else 'Workflow'} | Powered by Dify and Streamlit")
     
     if not st.session_state.api_key:
-        st.error("⚠️ No API key configured! Add it in the sidebar.")
-        return
+        st.warning("⚠️ Please configure your Dify API key in the sidebar to start chatting.")
+        st.info("""
+        **Quick Start:**
+        1. Go to your Dify workspace
+        2. Open your app → **Publish** tab
+        3. Copy the **API Secret Key** (starts with `app-`)
+        4. Paste it in the sidebar Settings
+        5. Select the correct **App Type** (Chatbot or Workflow)
+        """)
     
-    # Display messages
+    # Display chat messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
     
     # Chat input
-    if prompt := st.chat_input("Type your message..."):
+    if prompt := st.chat_input("Type your message here...", disabled=not st.session_state.api_key):
         
+        # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
         
+        # Display user message
         with st.chat_message("user"):
             st.markdown(prompt)
         
+        # Display assistant response
         with st.chat_message("assistant"):
             
-            with st.expander("🔍 Debug Output", expanded=True):
-                
+            # Route to correct function based on app type
+            if st.session_state.app_type == "chatbot":
+                # Chatbot mode
                 if use_streaming:
-                    st.write("### Streaming Mode")
                     message_placeholder = st.empty()
                     full_response = ""
                     
@@ -351,7 +497,6 @@ def main():
                     message_placeholder.markdown(full_response)
                 
                 else:
-                    st.write("### Blocking Mode")
                     response = chatbot_blocking(
                         query=prompt,
                         user_id=st.session_state.user_id,
@@ -360,7 +505,33 @@ def main():
                     )
                     full_response = response.get("answer", "No response.")
                     st.markdown(full_response)
+            
+            else:
+                # Workflow mode
+                if use_streaming:
+                    message_placeholder = st.empty()
+                    full_response = ""
+                    
+                    for chunk in workflow_streaming(
+                        query=prompt,
+                        user_id=st.session_state.user_id,
+                        inputs=st.session_state.custom_inputs
+                    ):
+                        full_response += chunk
+                        message_placeholder.markdown(full_response + "▌")
+                    
+                    message_placeholder.markdown(full_response)
+                
+                else:
+                    response = workflow_blocking(
+                        query=prompt,
+                        user_id=st.session_state.user_id,
+                        inputs=st.session_state.custom_inputs
+                    )
+                    full_response = response.get("answer", "No response.")
+                    st.markdown(full_response)
         
+        # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
 
