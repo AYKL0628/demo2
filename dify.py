@@ -535,7 +535,7 @@ def main():
                         user_id=st.session_state.user_id,
                         conversation_id=st.session_state.conversation_id,
                         inputs=custom_inputs
-                    ):
+                    )
                     full_response = response.get("answer", "No response.")
                     st.markdown(full_response)
         
