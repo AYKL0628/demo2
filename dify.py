@@ -29,10 +29,13 @@ def initialize_session_state():
         st.session_state.api_base_url = st.secrets.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1")
     
     if "debug_mode" not in st.session_state:
-        st.session_state.debug_mode = False  # OFF by default
+        st.session_state.debug_mode = False
     
     if "app_type" not in st.session_state:
         st.session_state.app_type = "chatbot"
+    
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = "chat"
 
 
 def chatbot_streaming(
@@ -343,24 +346,152 @@ def clear_conversation():
 
 
 # ============================================================================
-# Main UI
+# FAQ Data - CUSTOMIZE THESE!
 # ============================================================================
 
-def main():
-    """Main application."""
+FAQ_DATA = [
+    {
+        "question": "How do I get started with this chatbot?",
+        "answer": """To get started:
+1. Get your API key from your Dify workspace → App → Publish tab
+2. Paste it in the sidebar under "API Configuration"
+3. Select your app type (Chatbot or Workflow)
+4. Start chatting!"""
+    },
+    {
+        "question": "What is the difference between Chatbot and Workflow mode?",
+        "answer": """**Chatbot Mode:**
+- Conversational AI with memory
+- Maintains conversation context
+- Best for interactive Q&A
+
+**Workflow Mode:**
+- Task-based processing
+- Processes inputs and returns outputs
+- Best for specific operations"""
+    },
+    {
+        "question": "How do I reset my conversation?",
+        "answer": """Click the "🗑️ Clear Conversation" button in the sidebar. This will:
+- Clear all messages from the current session
+- Reset the conversation ID
+- Start fresh with a new conversation"""
+    },
+    {
+        "question": "What should I do if the AI doesn't respond?",
+        "answer": """If you're not getting responses:
+1. Check that your API key is correct (starts with 'app-')
+2. Verify your app type matches your Dify app (Chatbot vs Workflow)
+3. Make sure your Dify app is published
+4. Enable Debug Mode in the sidebar to see detailed error messages
+5. Check that your LLM model is configured in Dify"""
+    },
+    {
+        "question": "Can I use custom input parameters?",
+        "answer": """Yes! Use the "Additional Inputs" section in the sidebar to add custom parameters:
+1. Enter a key name (e.g., "language")
+2. Enter a value (e.g., "English")
+3. Click "Add Input"
+
+These parameters will be sent with every request."""
+    },
+    {
+        "question": "Is my conversation data saved?",
+        "answer": """Conversations are only stored during your current session:
+- Messages persist while the app is open
+- Data is cleared when you refresh the page or close the browser
+- No conversations are stored on servers
+- Each user has a unique session ID for the duration of their session"""
+    },
+    {
+        "question": "How do I enable Debug Mode?",
+        "answer": """To enable Debug Mode:
+1. Go to the sidebar
+2. Check the "🐛 Debug Mode" checkbox
+3. Send a message to see detailed request/response information
+
+This is helpful for troubleshooting issues."""
+    }
+]
+
+
+# ============================================================================
+# FAQ Page
+# ============================================================================
+
+def show_faq_page():
+    """Display the FAQ page."""
+    st.title("❓ Frequently Asked Questions")
+    st.caption("Common questions about using the Dify AI Assistant")
     
-    st.set_page_config(
-        page_title="Dify AI Assistant",
-        page_icon="🤖",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
+    # Back to Chat button
+    if st.button("← Back to Chat", use_container_width=False):
+        st.session_state.current_page = "chat"
+        st.rerun()
     
-    initialize_session_state()
+    st.divider()
+    
+    # Search functionality
+    search_query = st.text_input("🔍 Search FAQs", placeholder="Type to search...")
+    
+    st.divider()
+    
+    # Filter FAQs based on search
+    filtered_faqs = FAQ_DATA
+    if search_query:
+        filtered_faqs = [
+            faq for faq in FAQ_DATA
+            if search_query.lower() in faq["question"].lower() or
+               search_query.lower() in faq["answer"].lower()
+        ]
+    
+    # Display FAQs
+    if filtered_faqs:
+        for i, faq in enumerate(filtered_faqs):
+            with st.expander(f"**{faq['question']}**", expanded=(i == 0 and not search_query)):
+                st.markdown(faq["answer"])
+    else:
+        st.info("No FAQs match your search. Try different keywords.")
+    
+    st.divider()
+    
+    # Additional help section
+    st.subheader("💡 Still need help?")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        **Contact Support:**
+        - Email: support@example.com
+        - Discord: [Join our server](#)
+        """)
+    
+    with col2:
+        st.markdown("""
+        **Resources:**
+        - [Dify Documentation](https://docs.dify.ai)
+        - [GitHub Repository](#)
+        """)
+
+
+# ============================================================================
+# Chat Page
+# ============================================================================
+
+def show_chat_page():
+    """Display the main chat page."""
     
     # Sidebar
     with st.sidebar:
         st.title("⚙️ Settings")
+        
+        # FAQ Board Button - HIGHLIGHTED
+        if st.button("❓ FAQ Board", use_container_width=True, type="primary"):
+            st.session_state.current_page = "faq"
+            st.rerun()
+        
+        st.divider()
         
         # API Configuration
         with st.expander("🔑 API Configuration", expanded=not bool(st.session_state.api_key)):
@@ -409,8 +540,6 @@ def main():
             value=st.session_state.debug_mode,
             help="Show detailed request/response information"
         )
-
-        
         
         # Additional inputs
         with st.expander("📝 Additional Inputs"):
@@ -435,7 +564,7 @@ def main():
                     if col2.button("🗑️", key=f"del_{key}"):
                         del st.session_state.custom_inputs[key]
                         st.rerun()
-    
+        
         # Conversation info
         st.divider()
         st.caption(f"**User ID:** `{st.session_state.user_id[:8]}...`")
@@ -460,6 +589,8 @@ def main():
         3. Copy the **API Secret Key** (starts with `app-`)
         4. Paste it in the sidebar Settings
         5. Select the correct **App Type** (Chatbot or Workflow)
+        
+        💡 Need help? Check out the **FAQ Board** in the sidebar!
         """)
     
     # Display chat messages
@@ -535,6 +666,29 @@ def main():
         
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+
+# ============================================================================
+# Main App Router
+# ============================================================================
+
+def main():
+    """Main application with page routing."""
+    
+    st.set_page_config(
+        page_title="Dify AI Assistant",
+        page_icon="🤖",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    initialize_session_state()
+    
+    # Route to appropriate page
+    if st.session_state.current_page == "faq":
+        show_faq_page()
+    else:
+        show_chat_page()
 
 
 if __name__ == "__main__":
