@@ -418,7 +418,7 @@ In summary, RNNs with attention improve upon traditional RNNs by incorporating a
         """
     },
     {
-        "question": "What are the requirements of the presentaion??",
+        "question": "What are the requirements of the presentaion?",
         "answer": """The requirements for the group presentation in the CTDL1902 course are as follows:
 
 1. **Content**:
@@ -452,6 +452,109 @@ In summary, RNNs with attention improve upon traditional RNNs by incorporating a
 
 These requirements aim to ensure that the presentation is informative, engaging, and reflective of the group's understanding of the course material. Make sure to check any specific guidelines provided by your instructor for additional details or expectations."""
     },
+    {
+        "question": "Explain backwards propogation",
+        "answer": """1) Define key concepts:
+Backward propagation, or backpropagation, is a key algorithm used in training artificial neural networks. It involves calculating the gradient of the loss function with respect to each weight in the network by applying the chain rule of calculus. This process allows for the adjustment of weights in a way that reduces the error of the network's predictions.
+
+2) Provide evidence from the database:
+Backpropagation is described in the context of fixing weights for an entire network of perceptron neurons. It utilizes the chain rule to compute the slopes (gradients) of the loss function with respect to weights, which are then adjusted using gradient descent. This method is essential for training multilayer networks and is highlighted in the following source:
+
+"Errors for the entire network can be written as one, single equation" and "Using math (i.e., the Chain Rule), calculate slopes for every w, then use gradient descent" (source: Towards Data Science article on neural networks).
+3) Solve or answer logically:
+The backpropagation process follows these steps:
+
+Feed Forward: Input data is passed through the network to get predictions.
+Calculate Loss: The difference between the predictions and the actual values is computed using a loss function.
+Backpropagate Error: The algorithm calculates the gradient of the loss function with respect to the output of the network, and then uses the chain rule to propagate this error backward through the network layers, calculating gradients for each weight.
+Update Weights: Each weight is adjusted in the direction that minimizes the loss, using an optimization technique like gradient descent.
+4) Check for accuracy against known facts:
+Backpropagation is a widely used method in machine learning and is considered accurate for training neural networks. It is supported by extensive theoretical and empirical research. The process described aligns with standard practices in deep learning, confirming its validity as an effective training mechanism."""
+    },
+    {
+        "question": "Explain pros and cons of jobs after AI.",
+        "answer": """The rise of artificial intelligence (AI) is transforming the job market across various sectors. While AI brings many benefits, it also poses challenges. Here’s an overview of the pros and cons of jobs in a post-AI world:
+
+### Pros:
+
+1. **Increased Efficiency**:
+   - AI can automate repetitive and mundane tasks, allowing employees to focus on more strategic and creative aspects of their work. This can lead to higher productivity and job satisfaction.
+
+2. **New Job Creation**:
+   - While AI may replace some jobs, it also creates new ones. Roles in AI development, maintenance, ethical oversight, and data analysis are emerging, requiring a workforce skilled in technology.
+
+3. **Enhanced Decision-Making**:
+   - AI can analyze vast amounts of data quickly, providing insights that help professionals make informed decisions. This can improve outcomes in fields like healthcare, finance, and marketing.
+
+4. **Flexibility and Remote Work**:
+   - Many AI tools facilitate remote work and flexible schedules, allowing for a better work-life balance. This can lead to increased job satisfaction and attract a more diverse workforce.
+
+5. **Skill Development**:
+   - The demand for tech-savvy employees encourages continuous learning and skill development. Workers are motivated to upgrade their skills, fostering a culture of lifelong learning.
+
+### Cons:
+
+1. **Job Displacement**:
+   - Certain jobs, particularly those involving routine tasks, may be automated, leading to unemployment for workers in those roles. This can disproportionately affect low-skilled workers and exacerbate income inequality.
+
+2. **Skill Gap**:
+   - As AI technologies advance, there may be a shortage of workers with the necessary skills to operate and manage these new systems. This skill gap can create barriers to employment for many individuals.
+
+3. **Dependence on Technology**:
+   - Increased reliance on AI can lead to a decrease in critical thinking and problem-solving skills. Employees may become overly dependent on technology, which can be problematic in situations where human judgment is essential.
+
+4. **Ethical Concerns**:
+   - The integration of AI into the workplace raises ethical issues, such as bias in algorithms, privacy concerns, and the potential for surveillance. These issues require careful management to ensure fair and equitable treatment of employees.
+
+5. **Economic Disparities**:
+   - The benefits of AI may not be evenly distributed across industries or regions, potentially leading to greater economic disparities. Some sectors may thrive while others struggle, creating a divide in job opportunities.
+
+### Conclusion:
+
+The impact of AI on jobs is complex, with both positive and negative implications. While AI has the potential to enhance productivity and create new opportunities, it also poses challenges that must be addressed to ensure a fair and equitable workforce. Adaptation through reskilling and a focus on ethical AI deployment will be crucial as we navigate this evolving landscape."""
+    },
+    {
+        "question": "List potential risks of using AI",
+        "answer": """Here are several potential risks associated with the use of artificial intelligence (AI):
+
+1. **Bias and Discrimination**:
+   - AI systems can inherit biases present in their training data, leading to discriminatory outcomes in areas such as hiring, lending, and law enforcement.
+
+2. **Loss of Jobs**:
+   - Automation of tasks performed by humans can result in job displacement, particularly for low-skilled workers, potentially leading to increased unemployment and economic inequality.
+
+3. **Privacy Concerns**:
+   - AI systems often require large amounts of personal data to function effectively, raising concerns about data privacy and the potential for misuse of sensitive information.
+
+4. **Security Vulnerabilities**:
+   - AI systems can be susceptible to hacking and adversarial attacks, where malicious actors manipulate AI inputs to produce incorrect or harmful outputs.
+
+5. **Lack of Transparency**:
+   - Many AI models, especially deep learning systems, function as "black boxes," making it difficult to understand how decisions are made, which can lead to a lack of accountability.
+
+6. **Over-reliance on Technology**:
+   - Excessive dependence on AI systems may erode critical thinking and problem-solving skills among humans, as they may defer to AI for decision-making.
+
+7. **Ethical Concerns**:
+   - The deployment of AI raises ethical questions, such as the morality of using AI in warfare, surveillance, and other sensitive contexts.
+
+8. **Misinformation and Deepfakes**:
+   - AI can be used to create convincing fake content (e.g., deepfakes), which can spread misinformation and manipulate public opinion.
+
+9. **Job Polarization**:
+   - AI may lead to job polarization, where high-skill, high-wage opportunities increase, while low-skill jobs decline, exacerbating economic divides.
+
+10. **Environmental Impact**:
+    - The computational power required for training large AI models can have significant energy requirements, leading to increased carbon footprints and environmental concerns.
+
+11. **Societal Manipulation**:
+    - AI algorithms may be used to manipulate people’s behavior through targeted advertising and social media, raising concerns about autonomy and free will.
+
+12. **Regulatory Challenges**:
+    - The rapid advancement of AI technologies can outpace existing legal and regulatory frameworks, leading to gaps in governance and oversight.
+
+Addressing these risks requires proactive measures, including the development of ethical guidelines, robust regulatory frameworks, and ongoing dialogue among stakeholders to ensure responsible AI deployment."""
+    }
 ]
         
 
